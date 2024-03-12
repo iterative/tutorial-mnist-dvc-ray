@@ -19,7 +19,7 @@ from torch import nn
 
 from src.helpers import get_dataloaders
 from src.model import ConvNet
-from src.live import parse_studio_token, download_file_from_s3, download_folder_from_s3, list_objects_in_s3_folder
+from src.live import download_from_s3, list_objects_in_s3_dir
 
 
 def train_func_per_worker(config: Dict):
@@ -194,14 +194,14 @@ def train(params: dict) -> None:
     bucket_name = s3_path_parts[0]
     results_s3_directory = s3_path_parts[1]
     
-    obj_keys = list_objects_in_s3_folder(bucket_name, results_s3_directory)
+    obj_keys = list_objects_in_s3_dir(bucket_name, results_s3_directory)
     print("\nObjects in Trial S3 folder: ", obj_keys)
 
     for filename in ['model.pth']:
         try:
             object_key = os.path.join(results_s3_directory, filename)
             file_path = os.path.join(TRAIN_RESULTS_DIR, filename)
-            download_file_from_s3(bucket_name, object_key, file_path)
+            download_from_s3(bucket_name, object_key, file_path)
             print(f"Downloaded {filename} from S3")
         except Exception as e:
             print(f"Error downloading {filename} from S3: {e}")
@@ -209,7 +209,7 @@ def train(params: dict) -> None:
     # [6] Pull DVCLive logs from S3
     # =============================================
     s3_directory = "tutorial-mnist-dvc-ray/dvclive"
-    download_folder_from_s3(bucket_name, s3_directory, 'results/dvclive/')
+    download_from_s3(bucket_name, s3_directory, 'results/dvclive/')
     
 
 if __name__ == "__main__":
